@@ -3,5 +3,5 @@ export interface PullRequest {
     number: number
     title: string
     author: string
-    commitsUrl: string
+    commitCount: number
 }
