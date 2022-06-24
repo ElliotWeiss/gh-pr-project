@@ -17,3 +17,5 @@ app.use(morgan('dev'));
 app.use("/pr", pullReqestRouter);
 
 app.listen(SERVER_PORT, () => console.log(`App listening on port ${SERVER_PORT}...`));
+
+export default app;

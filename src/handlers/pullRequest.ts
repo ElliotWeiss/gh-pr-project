@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import axios, { AxiosResponse } from 'axios';
+import axios, { Axios, AxiosResponse } from 'axios';
 import { PullRequest } from '../models/pullRequest';
 
 const RESULTS_PER_PAGE: string = '5';
@@ -20,20 +20,21 @@ export const getPullReqestInfo = async (req: Request, res: Response, _next: Next
                 number: element.number,
                 title: element.title,
                 author: element.user.login,
-                commitCount: 0
+                commitCount: 0 //await getCommitCount(element.commits_url)
             };
-            
-            resultsArr.push(pr);
+          
             commitsArr.push(getCommitCount(element.commits_url));
+            resultsArr.push(pr);
         }
 
-        Promise.all(commitsArr).then(counts => {
-            for (let i = 0; i < resultsArr.length; i++) {
-                resultsArr[i].commitCount = counts[i];
-            }
-            res.status(200).json(resultsArr);
-            console.log("Successfully retrieved pull request information");
-        });
+        // Use a Promise.all() to improve performance - the GET requests to commits_url are non-blocking
+        const commitCountArr: number[] = await Promise.all(commitsArr);  
+        
+        // Assign the commitCount in resultsArr to the number returned in commitCountsArr since Promise.all preserve the order of the promises passed in
+        commitCountArr.forEach((count, i) => resultsArr[i].commitCount = count);
+
+        res.status(200).json(resultsArr);
+        console.log("Successfully retrieved pull request information");
     }
 
     catch (error) {
